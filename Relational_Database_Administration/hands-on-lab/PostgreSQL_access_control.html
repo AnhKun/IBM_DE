@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<!-- saved from url=(0189)https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DB0231EN-SkillsNetwork/labs/PostgreSQL/Lab%20-%20User%20Management%20and%20Access%20Control/instructional-labs.md.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./PostgreSQL_access_control_files/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="./PostgreSQL_access_control_files/default.min.css">
+  <style type="text/css">/* this file is used for labs on cognitiveclass.ai that were written in markdown */
+
+/* applies to images, i.e. "![]()" in markdown */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* add padding and margins */
+body {
+  padding: 10px;
+  margin: 10px;
+}
+
+/* applies to tables, i.e. "|--|--|" in markdown */
+table td,
+table th {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-top: 1px solid #dee2e6;
+}
+
+/* applies to using quotes, i.e. ">" in markdown */
+blockquote {
+  background: #f9f9f9;
+  border-left: 10px solid #ccc;
+  margin: 1.5em 10px;
+  padding: 1em 10px 0.1em 10px;
+  quotes: '\201C''\201D''\2018''\2019';
+}
+
+/* the headers need some spacing */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 500;
+  padding-top: 20px;
+}
+
+/* Add padding between nested list item */
+ul > li > ul {
+  padding-bottom: 1rem;
+}
+
+.code-badge-language {
+  display: none;
+}
+.code-badge-copy-icon {
+  background: url('data:image/svg+xml;base64,PHN2ZyBhcmlhLWhpZGRlbj0idHJ1ZSIgZm9jdXNhYmxlPSJmYWxzZSIgZGF0YS1wcmVmaXg9ImZhciIgZGF0YS1pY29uPSJjb3B5IiBjbGFzcz0ic3ZnLWlubGluZS0tZmEgZmEtY29weSBmYS13LTE0IiByb2xlPSJpbWciIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQ0OCA1MTIiPjxwYXRoIGZpbGw9ImN1cnJlbnRDb2xvciIgZD0iTTQzMy45NDEgNjUuOTQxbC01MS44ODItNTEuODgyQTQ4IDQ4IDAgMCAwIDM0OC4xMTggMEgxNzZjLTI2LjUxIDAtNDggMjEuNDktNDggNDh2NDhINDhjLTI2LjUxIDAtNDggMjEuNDktNDggNDh2MzIwYzAgMjYuNTEgMjEuNDkgNDggNDggNDhoMjI0YzI2LjUxIDAgNDgtMjEuNDkgNDgtNDh2LTQ4aDgwYzI2LjUxIDAgNDgtMjEuNDkgNDgtNDhWOTkuODgyYTQ4IDQ4IDAgMCAwLTE0LjA1OS0zMy45NDF6TTI2NiA0NjRINTRhNiA2IDAgMCAxLTYtNlYxNTBhNiA2IDAgMCAxIDYtNmg3NHYyMjRjMCAyNi41MSAyMS40OSA0OCA0OCA0OGg5NnY0MmE2IDYgMCAwIDEtNiA2em0xMjgtOTZIMTgyYTYgNiAwIDAgMS02LTZWNTRhNiA2IDAgMCAxIDYtNmgxMDZ2ODhjMCAxMy4yNTUgMTAuNzQ1IDI0IDI0IDI0aDg4djIwMmE2IDYgMCAwIDEtNiA2em02LTI1NmgtNjRWNDhoOS42MzJjMS41OTEgMCAzLjExNy42MzIgNC4yNDMgMS43NTdsNDguMzY4IDQ4LjM2OGE2IDYgMCAwIDEgMS43NTcgNC4yNDNWMTEyeiI+PC9wYXRoPjwvc3ZnPg==');
+  background-size: 100% 100%;
+}
+
+.code-badge {
+  bottom: 0 !important;
+  top: unset !important;
+  background: unset !important;
+}
+
+.code-badge > .code-badge-check-icon {
+  background: green;
+}
+.code-badge-check-icon {
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 0 7px;
+  background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGFyaWEtaGlkZGVuPSJ0cnVlIiBmb2N1c2FibGU9ImZhbHNlIiBkYXRhLXByZWZpeD0iZmFzIiBkYXRhLWljb249ImNoZWNrIiBjbGFzcz0ic3ZnLWlubGluZS0tZmEgZmEtY2hlY2sgZmEtdy0xNiIgcm9sZT0iaW1nIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgc3R5bGU9IiYjMTA7ICAgIGNvbG9yOiAjMmFmZjMyOyYjMTA7Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0xNzMuODk4IDQzOS40MDRsLTE2Ni40LTE2Ni40Yy05Ljk5Ny05Ljk5Ny05Ljk5Ny0yNi4yMDYgMC0zNi4yMDRsMzYuMjAzLTM2LjIwNGM5Ljk5Ny05Ljk5OCAyNi4yMDctOS45OTggMzYuMjA0IDBMMTkyIDMxMi42OSA0MzIuMDk1IDcyLjU5NmM5Ljk5Ny05Ljk5NyAyNi4yMDctOS45OTcgMzYuMjA0IDBsMzYuMjAzIDM2LjIwNGM5Ljk5NyA5Ljk5NyA5Ljk5NyAyNi4yMDYgMCAzNi4yMDRsLTI5NC40IDI5NC40MDFjLTkuOTk4IDkuOTk3LTI2LjIwNyA5Ljk5Ny0zNi4yMDQtLjAwMXoiLz48L3N2Zz4=');
+  background-size: 100% 100%;
+}
+</style></head>
+  <body data-new-gr-c-s-check-loaded="14.1073.0" data-gr-ext-installed="">
+    <img src="./PostgreSQL_access_control_files/IDSNlogo.png" width="200" height="200">
+    <h1>User Management and Access Control in PostgreSQL</h1>
+    <p><strong>Estimated time needed:</strong> 15 minutes</p>
+    <p>For much of the routine tasks involved with interacting with a database, such as reading the content of a table or adding new entries, the postgres superuser may not be appropriate as it bypasses all permission checks, which carries inherent risk. Furthermore, as a database administrator, you will almost certainly not be the only one who will need to access the database in some capacity. For this reason, you will need a way to add new users to the database and give them the proper privileges that is appropriate for their use cases.</p>
+    <h2>Objectives</h2>
+    <p>After completing this lab, you will be able to:</p>
+    <ul>
+      <li>Create roles in a database and grant them select permissions</li>
+      <li>Create new users in the database and assign them the appropriate role</li>
+      <li>Revoke and deny access to the database from a user</li>
+    </ul>
+    <h2>Software used in this Lab</h2>
+    <p>In this lab, you will be using PostgreSQL. It is a popular open-source object Relational Database Management System (RDBMS) capable of performing a wealth of database administration tasks, such as storing, manipulating, retrieving, and archiving data.</p>
+    <p>To complete this lab, you will be accessing the PostgreSQL service through the IBM Skills Network (SN) Cloud IDE, which is a virtual development environnement you will utilize throughout this course.</p>
+    <h2>Database used in this Lab</h2>
+    <p>In this lab, you will use a database from <a href="https://postgrespro.com/education/demodb?utm_medium=Exinfluencer&amp;utm_source=Exinfluencer&amp;utm_content=000026UJ&amp;utm_term=10006555&amp;utm_id=NA-SkillsNetwork-Channel-SkillsNetworkCoursesIBMDB0231ENSkillsNetwork26763093-2022-01-01" target="_blank" rel="external">https://postgrespro.com/education/demodb</a> distributed under the <a href="https://www.postgresql.org/about/licence/?utm_medium=Exinfluencer&amp;utm_source=Exinfluencer&amp;utm_content=000026UJ&amp;utm_term=10006555&amp;utm_id=NA-SkillsNetwork-Channel-SkillsNetworkCoursesIBMDB0231ENSkillsNetwork26763093-2022-01-01" target="_blank" rel="external">PostgreSQL licence</a>. It stores a month of data about airline flights in Russia and is organized according to the following schema:</p>
+    <p>
+      <img src="./PostgreSQL_access_control_files/DB_schema.png" alt="Schema fn demo database for PostgreSQL">
+    </p>
+    <h2>Launching PostgreSQL in Cloud IDE</h2>
+    <p>To get started with this lab, launch PostgreSQL using the Cloud IDE. You can do this by following these steps:</p>
+    <ol>
+      <li>
+        <p>Click on the <strong>Skills Network extension</strong> button on the left side of the window.</p>
+      </li>
+      <li>
+        <p>Open the <strong>DATABASES</strong> drop-down menu and click on <strong>PostgreSQL</strong>.</p>
+      </li>
+      <li>
+        <p>Click on the <strong>Start</strong> button. PostgreSQL may take a few moments to start.</p>
+      </li>
+    </ol>
+    <p>
+      <img src="./PostgreSQL_access_control_files/SC_1.png" alt="Screenshot for launching PostgreSQL">
+    </p><br>
+    <h2>Downloading and Creating the Database</h2>
+    <p><strong>First, we will need to download the database.</strong></p>
+    <ol>
+      <li>Open a new terminal by clicking on the <strong>New Terminal</strong> button near the bottom of the interface.</li>
+    </ol>
+    <p>
+      <img src="./PostgreSQL_access_control_files/SC_A.png" alt="Clicking New Terminal">
+    </p>
+    <ol start="2">
+      <li>
+        <p>Run the following command in the terminal.</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">awk</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-awk">wget https:<span class="hljs-regexp">//</span>cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud<span class="hljs-regexp">/example-guided-project/</span>flights_RUSSIA_small.sql
+</code></pre>
+        <p></p>
+      </li>
+    </ol>
+    <p>The file which you downloaded is a full database backup of a month of flight data in Russia. Now, you can perform a full restoration of the dataset by first opening the PostgreSQL CLI.</p>
+    <ol start="3">
+      <li>Near the bottom of the window, click on the <strong>PostgreSQL CLI</strong> button to launch the Command Line Interface.</li>
+    </ol>
+    <p>
+      <img src="./PostgreSQL_access_control_files/SC_2.png" alt="Launching a command line interface">
+    </p>
+    <ol start="4">
+      <li>
+        <p>In the PostgreSQL CLI, type in the command <code>\i &lt;file_name&gt;.</code> In your case, the filename will be the name of the file you downloaded, <code>flights_RUSSIA_small.sql</code>. This will restore the data into a new database called <code>demo</code>.</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">stylus</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-stylus">\<span class="hljs-selector-tag">i</span> flights_RUSSIA_small<span class="hljs-selector-class">.sql</span>
+</code></pre>
+        <p></p>
+        <p>The restorations may take a few moments to complete.</p>
+      </li>
+      <li>
+        <p>Verify that the database was properly created by entering the following command:</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">css</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-css">\<span class="hljs-selector-tag"><span class="hljs-selector-tag">dt</span></span>
+</code></pre>
+        <p></p>
+        <p>You should see the following output showing all the tables that are part of the <code>bookings</code> schema in the <code>demo</code> database.</p>
+        <p>
+          <img src="./PostgreSQL_access_control_files/SC_3.png" alt="Command line shows all tables that belong to bookings schema in demo database">
+        </p>
+      </li>
+    </ol>
+    <h1>Exercise 1: Create New Roles and Grant them Relevant Privileges</h1>
+    <p>In PostgreSQL, users, groups, and roles are all the same entity, with the difference being that users can log in by default.</p>
+    <p>In this exercise, you will create two new roles: <code>read_only</code> and <code>read_write</code>, then grant them the relevant privileges.</p>
+    <p>To begin, ensure that you have the PostgreSQL Command Line Interface open and connected to the <code>demo</code> database, as such:</p>
+    <p>
+      <img src="./PostgreSQL_access_control_files/pg_CLI.png" alt="PostgreSQL CLI">
+    </p>
+    <h2>Task A: Create a <code>read_only</code> role and grant it privileges</h2>
+    <ol>
+      <li>
+        <p>To create a new role named <code>read_only</code>, enter the following command into the CLI:</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">crmsh</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-crmsh">CREATE <span class="hljs-keyword">ROLE</span> <span class="hljs-title">read_only</span>;
+</code></pre>
+        <p></p>
+      </li>
+      <li>
+        <p>First, this role needs the privilege to connect to the <code>demo</code> database itself. To grant this privilege, enter the following command into the CLI:</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">pgsql</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-pgsql"><span class="hljs-keyword">GRANT</span> <span class="hljs-keyword">CONNECT</span> <span class="hljs-keyword">ON</span> <span class="hljs-keyword">DATABASE</span> demo <span class="hljs-keyword">TO</span> read_only;
+</code></pre>
+        <p></p>
+      </li>
+      <li>
+        <p>Next, the role needs to be able to use the schema in use in this database. In our example, this is the <code>bookings</code> schema. Grant the privilege for the <code>read_only</code> role to use the schema by entering the following:</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">pgsql</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-pgsql"><span class="hljs-keyword">GRANT</span> <span class="hljs-keyword">USAGE</span> <span class="hljs-keyword">ON</span> <span class="hljs-keyword">SCHEMA</span> bookings <span class="hljs-keyword">TO</span> read_only;
+</code></pre>
+        <p></p>
+      </li>
+      <li>
+        <p>To access the information in tables in a database, the <code>SELECT</code> command is used. For the <code>read_only</code> role, we want it to be able to access the contents of the database but not to edit or alter it. So for this role, only the <code>SELECT</code> privilege is needed. To grant this privilege, enter the following command:</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">pgsql</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-pgsql"><span class="hljs-keyword">GRANT</span> <span class="hljs-keyword">SELECT</span> <span class="hljs-keyword">ON</span> <span class="hljs-keyword">ALL</span> <span class="hljs-keyword">TABLES</span> <span class="hljs-keyword">IN</span> <span class="hljs-keyword">SCHEMA</span> bookings <span class="hljs-keyword">TO</span> read_only;
+</code></pre>
+        <p></p>
+        <p>This allows the <code>read_only</code> role to execute the <code>SELECT</code> command on <strong>all</strong> tables in the bookings schema.</p>
+      </li>
+    </ol>
+    <h2>Task B: Create a <code>read_write</code> role and grant it privileges</h2>
+    <ol>
+      <li>
+        <p>Similarly, create a new role called <code>read_write</code> with the following command in the PostgreSQL CLI:</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">crmsh</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-crmsh">CREATE <span class="hljs-keyword">ROLE</span> <span class="hljs-title">read_write</span>;
+</code></pre>
+        <p></p>
+      </li>
+      <li>
+        <p>As in Task A, this role should first be given the privileges to connect to the <code>demo</code> database. Grant this privilege by entering the following command:</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">pgsql</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-pgsql"><span class="hljs-keyword">GRANT</span> <span class="hljs-keyword">CONNECT</span> <span class="hljs-keyword">ON</span> <span class="hljs-keyword">DATABASE</span> demo <span class="hljs-keyword">TO</span> read_write;
+</code></pre>
+        <p></p>
+      </li>
+      <li>
+        <p>Give the role the privileges to use the <code>bookings</code> schema that is used in the <code>demo</code> database with the following:</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">pgsql</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-pgsql"><span class="hljs-keyword">GRANT</span> <span class="hljs-keyword">USAGE</span> <span class="hljs-keyword">ON</span> <span class="hljs-keyword">SCHEMA</span> bookings <span class="hljs-keyword">TO</span> read_write;
+</code></pre>
+        <p></p>
+      </li>
+      <li>
+        <p>So far the commands for the <code>read_write</code> role have been essentially the same as for the <code>read_only</code> role. However, the <code>read_write</code> role should have the privileges to not only access the contents of the database, but also to create, delete, and modify entries. The corresponding commands for these actions are <code>SELECT</code>, <code>INSERT</code>, <code>DELETE</code>, and <code>UPDATE</code>, respectively. Grant this role these privileges by entering the following command into the CLI:</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">pgsql</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-pgsql"><span class="hljs-keyword">GRANT</span> <span class="hljs-keyword">SELECT</span>, <span class="hljs-keyword">INSERT</span>, <span class="hljs-keyword">DELETE</span>, <span class="hljs-keyword">UPDATE</span> <span class="hljs-keyword">ON</span> <span class="hljs-keyword">ALL</span> <span class="hljs-keyword">TABLES</span> <span class="hljs-keyword">IN</span> <span class="hljs-keyword">SCHEMA</span> bookings <span class="hljs-keyword">TO</span> read_write;
+</code></pre>
+        <p></p>
+      </li>
+    </ol>
+    <h1>Exercise 2: Add a New User and Assign them a Relevant Role</h1>
+    <p>In this exercise, you will create a new user for the database and assign them the one of the roles you created in Exercise 1. This method streamlines the process of adding new users to the database since you don't have to go through the process of granting custom privileges to each one. Instead, you can assign them a role and the user inherits the privileges of that role.</p><br>
+    <p>Suppose you wish to add a new user, <code>user_a</code>, for use by an information and help desk at an airport. In this case, assume that there is no need for this user to modify the contents of the database. As you may have guessed, the appropriate role to assign is the <code>read_only</code> role.</p>
+    <ol>
+      <li>
+        <p>To create a new user named <code>user_a</code>, enter the following command into the PostgreSQL CLI:</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">n1ql</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-n1ql"><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">USER</span> user_a <span class="hljs-keyword">WITH</span> <span class="hljs-keyword">PASSWORD</span> <span class="hljs-string">'user_a_password'</span>;
+</code></pre>
+        <p></p>
+        <p>In practice, you would enter a secure password in place of 'user_a_password', which will be used to access the database through this user.</p>
+      </li>
+      <li>
+        <p>Next, assign <code>user_a</code> the <code>read_only</code> role by executing the following command in the CLI:</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">pgsql</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-pgsql"><span class="hljs-keyword">GRANT</span> read_only <span class="hljs-keyword">TO</span> user_a;
+</code></pre>
+        <p></p>
+      </li>
+      <li>
+        <p>You can list all the roles and users by typing the following command:</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">livescript</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-livescript"><span class="hljs-string">\du</span>
+</code></pre>
+        <p></p>
+        <p>
+          You will see the following output:
+          
+          <img src="./PostgreSQL_access_control_files/UAM_1.png" alt="PostgreSQL CLI output">
+          Notice that <code>user_a</code> was successfully created and that it is a member of <code>read_only</code>.
+        </p>
+      </li>
+    </ol>
+    <h1>Exercise 3: Revoke and Deny Access</h1>
+    <p>In this exercise, you will learn how to revoke a user's privilege to access specific tables in a database.</p>
+    <p>Suppose there is no need for the information and help desk at the airport to access information stored in the <code>aircrafts_data</code> table. In this exercise, you will revoke the <code>SELECT</code> privilege on the <code>aircrafts_data</code> table in the <code>demo</code> database from <code>user_a</code>.</p><br>
+    <ol>
+      <li>
+        <p>You can use the <code>REVOKE</code> command in the Command Line Interface to remove specific privileges from a role or user in PostgreSQL. Enter the following command into the PostgreSQL CLI to remove the privileges to access the <code>aircrafts_data</code> table from <code>user_a</code>:</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">pgsql</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-pgsql"><span class="hljs-keyword">REVOKE</span> <span class="hljs-keyword">SELECT</span> <span class="hljs-keyword">ON</span> aircrafts_data <span class="hljs-keyword">FROM</span> user_a;
+</code></pre>
+        <p></p>
+      </li>
+      <li>
+        <p>Now suppose <code>user_a</code> is transferred departments within the airport and no longer needs to be able to access the <code>demo</code> database at all. You can remove all their <code>SELECT</code> privileges by simply revoking the <code>read_only</code> role you assigned to them earlier. You can do this by entering the following command in the CLI:</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">pgsql</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-pgsql"><span class="hljs-keyword">REVOKE</span> read_only <span class="hljs-keyword">FROM</span> user_a;
+</code></pre>
+        <p></p>
+      </li>
+      <li>
+        <p>Now you can check all the users and their roles again to see that the <code>read_only</code> role was successfully revoked from <code>user_a</code> by entering the following command again:</p>
+        <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">livescript</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-livescript"><span class="hljs-string">\du</span>
+</code></pre>
+        <p></p>
+        <p>You will see the following output:</p>
+        <p>
+          <img src="./PostgreSQL_access_control_files/UAM_2.png" alt="PostgreSQL CLI shows results of revoking read only privileges">
+        </p>
+        <p>Notice that <code>user_a</code> is still present but it is no longer a member of the <code>read_only</code> role.</p>
+      </li>
+    </ol>
+    <h1>Practice Exercise</h1>
+    <p>Now it's time to implement some of what you learned! In this practice exercise, you will use what you learned in the previous exercises to create a new user and assign them a relevant role.</p>
+    <p><strong>Scenario</strong>: <em>Suppose there is a new employee at the airline in which you are the database administrator for. They interact directly with clients to create new bookings for flights. As such, they will need to not only access the information in the database, but also to create new bookings.</em></p>
+    <p>To complete this exercise, create a new user called <code>user_b</code> and grant it the privileges to both read and write to the <code>demo</code> database.</p>
+    <details>
+      <summary>Hint (Click Here)</summary>
+      <ul>
+        <li>For a refresher on how to create a user, feel free to take a look back at Exercise 2.</li>
+        <li>Recall that in this lab, you created a <code>read_write</code> role. This could be an appropriate role to assign to <code>user_b</code>.</li>
+      </ul>
+    </details>
+    <details>
+      <summary>Solution (Click Here)</summary>
+      <ol>
+        <li>
+          <p>First, you can create a new user using the following command:</p>
+          <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">n1ql</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-n1ql"><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">USER</span> user_b <span class="hljs-keyword">WITH</span> <span class="hljs-keyword">PASSWORD</span> <span class="hljs-string">'user_b_password'</span>;
+</code></pre>
+          <p></p>
+        </li>
+        <li>
+          <p>Next, you can grant the user you just created the <code>read_write</code> role by entering the following command into the CLI:</p>
+          <pre class="code-badge-pre"><div class="code-badge">
+        <div class="code-badge-language">pgsql</div>
+        <div title="Copy to clipboard">
+            <i class="code-badge-copy-icon code-badge-copy-icon"></i>
+        </div>
+     </div><code class="hljs language-pgsql"><span class="hljs-keyword">GRANT</span> read_write <span class="hljs-keyword">TO</span> user_b;
+</code></pre>
+          <p></p>
+        </li>
+      </ol>
+    </details>
+    <h1>Conclusion</h1>
+    <p>Congratulations on completing this lab on user management and access control in PostgreSQL. You now have some foundational knowledge on how to create new roles for your database, add new users, and assign those users relevant roles. In addition, you also have the capability to revoke privileges from users in the database.</p>
+    <h1>Author(s)</h1>
+    <p><a href="https://www.linkedin.com/in/david-pasternak-6b84a2208/?utm_medium=Exinfluencer&amp;utm_source=Exinfluencer&amp;utm_content=000026UJ&amp;utm_term=10006555&amp;utm_id=NA-SkillsNetwork-Channel-SkillsNetworkCoursesIBMDB0231ENSkillsNetwork26763093-2022-01-01" target="_blank" rel="external">David Pasternak</a></p>
+    <h2>Other Contributor(s)</h2>
+    <p>Sandip Saha Joy, Rav Ahuja</p>
+    <h2>Changelog</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Version</th>
+          <th>Changed by</th>
+          <th>Change Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>2021-07-14</td>
+          <td>0.1</td>
+          <td>David Pasternak</td>
+          <td>Initial version created</td>
+        </tr>
+        <tr>
+          <td>2021-10-8</td>
+          <td>0.2</td>
+          <td>Steve Hord</td>
+          <td>Copy Edit</td>
+        </tr>
+        <tr>
+          <td>2022-07-27</td>
+          <td>0.3</td>
+          <td>Lakshmi Holla</td>
+          <td>Updated HTML tag</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+    <h2></h2>
+    <h3 align="center">© IBM Corporation 2021. All rights reserved.</h3>
+    <h3></h3>
+    <script>window.addEventListener('load', function() {
+snFaculty.inject();
+});</script>
+    <script src="./PostgreSQL_access_control_files/inject.43989f87.js.download"></script>
+    <script src="./PostgreSQL_access_control_files/highlight.min.js.download"></script>
+    <script src="./PostgreSQL_access_control_files/highlightjs-badge.min.js.download"></script>
+  
+
+<style>
+@media print {
+   .code-badge { display: none; }
+}
+    .code-badge-pre {
+        position: relative;
+    }
+    .code-badge {
+        display: flex;
+        flex-direction: row;
+        white-space: normal;
+        background: transparent;
+        background: #333;
+        color: white;
+        font-size: 0.875em;
+        opacity: 0.5;
+        transition: opacity linear 0.5s;
+        border-radius: 0 0 0 7px;
+        padding: 5px 8px 5px 8px;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+    .code-badge.active {
+        opacity: 0.8;
+    }
+
+    .code-badge:hover {
+        opacity: .95;
+    }
+
+    .code-badge a,
+    .code-badge a:hover {
+        text-decoration: none;
+    }
+
+    .code-badge-language {
+        margin-right: 10px;
+        font-weight: 600;
+        color: goldenrod;
+    }
+    .code-badge-copy-icon {
+        font-size: 1.2em;
+        cursor: pointer;
+        padding: 0 7px;
+        margin-top:2;
+    }
+    .fa.text-success:{ color: limegreen !important }
+</style><div id="CodeBadgeTemplate" style="display:none">
+    <div class="code-badge">
+        <div class="code-badge-language">{{language}}</div>
+        <div title="Copy to clipboard">
+            <i class="{{copyIconClass}} code-badge-copy-icon"></i>
+        </div>
+     </div>
+</div></body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>
